@@ -1,0 +1,44 @@
+/*@!Encoding:1252*/
+includes
+{
+  
+}
+
+variables
+{
+  message 0x200 ECUmsg;
+}
+on start
+{
+  write("ECU has been started");
+  ECUmsg.dlc = 8;
+}
+on message 0x100      //ECU receives request from tester
+{
+  if((((this.byte(0)&0XF0)==0x00)&&(this.byte(1)==0x10)&&(this.byte(2)==0x03)))
+  {
+    write("ECU:Msg has been received from tester to move to Diagnostic session");
+    ECUmsg.byte(0)=0x60;
+    ECUmsg.byte(1)=0x50;
+    ECUmsg.byte(2)=0x03;   //this.byte can also be used;
+    ECUmsg.byte(3)=0x00; //p2 server higher byte 
+    ECUmsg.byte(4)=0x14; //p2 server lower byte
+    ECUmsg.byte(5)=0x01; //P2* server higher byte, 
+    ECUmsg.byte(6)=0xF4; //p2* server lower byte, these all are imaginary timer values
+    ECUmsg.byte(7)=0xFF; //padding
+    output(ECUmsg);
+    write("ECU: Responded positively to the tester to remain in diagnostic session");
+  }
+
+if((((this.byte(0)&0xf0)==0x00)&&(this.byte(1)==0x3E)&&(this.byte(2)==0x00)))
+{
+  write("ECU tester present request received");
+  ECUmsg.byte(0)=0x02;
+   ECUmsg.byte(0)=0x40;//3E+40 is positive response
+  ECUmsg.byte(2)=this.byte(0);
+  ECUmsg.byte(3)=0xaa;
+  ECUmsg.byte(4)=0xaa;
+  ECUmsg.byte(5)=0xaa;
+  ECUmsg.byte(6)=0xaa;
+  ECUmsg.byte(7)=0xaa; 
+}}

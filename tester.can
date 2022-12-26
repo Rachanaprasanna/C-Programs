@@ -1,0 +1,43 @@
+/*@!Encoding:1252*/
+includes
+{
+  
+}
+
+variables
+{ 
+   message 0x100 Testermsg;
+   timer testerpresent;
+}
+on start
+{
+  write("Tester: started");
+  write("press key 't' to enter the Extended Diagnostic session");
+  Testermsg.dlc = 8;
+}
+on key 't'
+{
+  write("Tester: request to move to extended diagnostic session");
+  Testermsg.byte(0) = 0x02; //length
+  Testermsg.byte(1) = 0x10; //service id of diagnostic session. 
+  Testermsg.byte(2) = 0x03;
+  output(Testermsg);
+  setTimer(testerpresent,4);  //We need to give time less than 5 seconds.
+}
+on message 0x200  //to check ECU message
+{
+  if((this.byte(1)==0x50)&&(this.byte(2)==0x03))
+  {
+    write("Tester: Positive response received from the ECU from extended diagnostic request");
+  }
+}
+
+on timer testerpresent
+{
+  setTimer(testerpresent,4);
+   Testermsg.byte(0) = 0x02; //length
+  Testermsg.byte(1) = 0x3E; //service id of diagnostic session.
+   Testermsg.byte(1) = 0x00; 
+  output(Testermsg);
+}
+
